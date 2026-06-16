@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink:#0D0F14; --ink-soft:#3D4250; --ink-mute:#8891A4;
-    --surface:#F5F6F9; --card:#FFFFFF; --border:#E4E7EF;
-    --accent:#1A3A5C; --accent2:#2563EB; --gold:#C9943A;
-    --danger:#D14343; --success:#16A34A; --ambar:#2563EB; --gina:#7C3AED; --r:8px;
+    --ink:#0D0F14;--ink-soft:#3D4250;--ink-mute:#8891A4;
+    --surface:#F5F6F9;--card:#FFFFFF;--border:#E4E7EF;
+    --accent:#1A3A5C;--accent2:#2563EB;--gold:#C9943A;
+    --danger:#D14343;--success:#16A34A;--ambar:#2563EB;--gina:#7C3AED;--r:8px;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Inter',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
@@ -23,7 +23,8 @@
   .tab-btn.active{background:rgba(255,255,255,.18);color:#fff}
   .topbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
   .topbar-date{font-size:11px;color:rgba(255,255,255,.55)}
-  .sync-status{font-size:11px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px}
+  .sync-status{font-size:11px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px;cursor:pointer}
+  .sync-status:hover{opacity:.8}
   .sync-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80}
   .sync-dot.loading{background:var(--gold);animation:pulse 1s infinite}
   .sync-dot.error{background:var(--danger)}
@@ -104,7 +105,7 @@
   .tile-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px}
   .tile-title{font-size:13px;font-weight:600;margin-bottom:6px}
   .tile-desc{font-size:12px;color:var(--ink-mute);line-height:1.6}
-  #loading-overlay{position:fixed;inset:0;background:rgba(26,58,92,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:#fff;gap:16px}
+  #loading-overlay{position:fixed;inset:0;background:rgba(26,58,92,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:#fff;gap:16px}
   .spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{font-size:14px;opacity:.8}
@@ -128,7 +129,10 @@
   </div>
   <div class="topbar-right">
     <div class="topbar-date" id="fecha-actual"></div>
-    <div class="sync-status"><div class="sync-dot loading" id="sync-dot"></div><span id="sync-text">Cargando…</span></div>
+    <div class="sync-status" onclick="loadAll()" title="Clic para actualizar">
+      <div class="sync-dot loading" id="sync-dot"></div>
+      <span id="sync-text">Cargando…</span>
+    </div>
   </div>
 </div>
 
@@ -150,10 +154,10 @@
   <div class="section-label">Indicadores clave · En vivo desde Google Sheets</div>
   <div class="kpi-grid">
     <div class="kpi-card"><div class="kpi-eyebrow">Total Eventos</div><div class="kpi-value" id="kpi-total-eventos">—</div><div class="kpi-sub">Matrimonios · Galas · Cumpleaños</div></div>
-    <div class="kpi-card danger"><div class="kpi-eyebrow">Total Bajas</div><div class="kpi-value" id="kpi-total-bajas">—</div><div class="kpi-sub" id="kpi-bajas-sub">De los eventos registrados</div><span class="kpi-badge badge-danger" id="kpi-tasa-baja">— tasa baja</span></div>
-    <div class="kpi-card success"><div class="kpi-eyebrow">Recuperación</div><div class="kpi-value" id="kpi-recuperacion">—</div><div class="kpi-sub">Bajas recuperadas</div><span class="kpi-badge badge-success">✓ Programa de rescate activo</span></div>
+    <div class="kpi-card danger"><div class="kpi-eyebrow">Total Bajas</div><div class="kpi-value" id="kpi-total-bajas">—</div><div class="kpi-sub" id="kpi-bajas-sub">De los eventos registrados</div><span class="kpi-badge badge-danger" id="kpi-tasa-baja">—</span></div>
+    <div class="kpi-card success"><div class="kpi-eyebrow">Recuperación</div><div class="kpi-value" id="kpi-recuperacion">—</div><div class="kpi-sub">Bajas recuperadas</div><span class="kpi-badge badge-success">✓ Programa activo</span></div>
     <div class="kpi-card gold"><div class="kpi-eyebrow">Upselling Total</div><div class="kpi-value" id="kpi-upselling">—</div><div class="kpi-sub">Ambar + Gina</div></div>
-    <div class="kpi-card"><div class="kpi-eyebrow">Referidos · Contratos</div><div class="kpi-value" id="kpi-referidos">—</div><div class="kpi-sub" id="kpi-ref-sub">Contratos cerrados</div></div>
+    <div class="kpi-card"><div class="kpi-eyebrow">Referidos · Contratos</div><div class="kpi-value" id="kpi-referidos">—</div><div class="kpi-sub">Contratos cerrados</div></div>
     <div class="kpi-card danger"><div class="kpi-eyebrow">Motivo Baja</div><div class="kpi-value" id="kpi-motivo">—</div><div class="kpi-sub">Causa dominante</div><span class="kpi-badge badge-danger">Alerta: causa única</span></div>
   </div>
   <div class="two-col">
@@ -223,8 +227,8 @@
     <div class="card-header"><span class="card-title">Seguimiento Mensual</span></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><tr>
       <th>Mes</th>
-      <th style="color:#2563EB">Ambar·Eventos</th><th style="color:#2563EB">Ventas</th><th style="color:#2563EB">%Ups</th><th style="color:#2563EB">Total</th>
-      <th style="color:#7C3AED">Gina·Eventos</th><th style="color:#7C3AED">Ventas</th><th style="color:#7C3AED">%Ups</th><th style="color:#7C3AED">Total</th>
+      <th style="color:#2563EB">Ambar·Eventos</th><th style="color:#2563EB">Ventas</th><th style="color:#2563EB">% Ups</th><th style="color:#2563EB">Total</th>
+      <th style="color:#7C3AED">Gina·Eventos</th><th style="color:#7C3AED">Ventas</th><th style="color:#7C3AED">% Ups</th><th style="color:#7C3AED">Total</th>
     </tr></thead><tbody id="upselling-tbody"></tbody></table></div>
   </div>
 </div>
@@ -271,205 +275,168 @@
 </div>
 
 <script>
-const SHEET_ID = '1i_9g3hzH2JEJcyYwgWaNnfdjiLF3HryIHjsiefDSiMU';
-
-// GIDs de cada hoja (obtenidos por nombre via URL exportación)
-// formato: export?format=csv&id=SHEET_ID&gid=GID
-// Nombres: BAJAS, UPSELLING, REFERIDOS
-// Los GIDs los resolvemos dinámicamente desde el feed público
-const SHEETS = { BAJAS: 'BAJAS', UPSELLING: 'UPSELLING', REFERIDOS: 'REFERIDOS' };
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWBhJ02J5ofwACU5aXS0MZL-AarLASAJCt0mr9LEaGsJhjh3sU0ZV4OmImJRyvs_K3/exec';
 
 document.getElementById('fecha-actual').textContent =
   new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-function showPage(id, btn) {
+function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
 }
 
-function setSyncOk() {
-  const d = document.getElementById('sync-dot');
-  d.className = 'sync-dot';
-  d.style.background = '#4ADE80';
-  document.getElementById('sync-text').textContent =
-    'Sincronizado · ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+function setSyncOk(){
+  const d=document.getElementById('sync-dot');
+  d.className='sync-dot';
+  document.getElementById('sync-text').textContent='↻ Actualizar · '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
 }
-function setSyncError(msg) {
-  const d = document.getElementById('sync-dot');
-  d.className = 'sync-dot error';
-  document.getElementById('sync-text').textContent = msg || 'Error de conexión';
+function setSyncError(){
+  document.getElementById('sync-dot').className='sync-dot error';
+  document.getElementById('sync-text').textContent='Error · Reintentar';
 }
-
-// Usar proxy CORS-free: allorigins
-async function fetchCSV(sheetName) {
-  const exportUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(exportUrl)}`;
-  const res = await fetch(proxy);
-  if (!res.ok) throw new Error('HTTP '+res.status);
-  const text = await res.text();
-  return parseCSV(text);
+function setSyncLoading(){
+  document.getElementById('sync-dot').className='sync-dot loading';
+  document.getElementById('sync-text').textContent='Cargando…';
 }
 
-function parseCSV(text) {
-  const lines = text.split('\n').filter(l=>l.trim());
-  return lines.map(line => {
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i=0; i<line.length; i++) {
-      const ch = line[i];
-      if (ch==='"') { inQ=!inQ; continue; }
-      if (ch===',' && !inQ) { cols.push(cur.trim()); cur=''; continue; }
-      cur += ch;
-    }
-    cols.push(cur.trim());
-    return cols;
-  });
-}
+function n(v){ const x=parseFloat(String(v).replace(/[^0-9.-]/g,'')); return isNaN(x)?0:x; }
+function pct(v,t){ return t>0?(v/t*100).toFixed(1)+'%':'0%'; }
 
-function n(val) {
-  if (!val || val==='' || val==='—') return 0;
-  const s = String(val).replace(/[%$\s.]/g,'').replace(',','.');
-  const v = parseFloat(s);
-  return isNaN(v) ? 0 : v;
-}
-
-function drawDonut(M,G,C) {
-  const total = M+G+C||1;
-  const circ = 2*Math.PI*50;
+function drawDonut(M,G,C){
+  const total=M+G+C||1, circ=2*Math.PI*50;
   const dM=M/total*circ, dG=G/total*circ, dC=C/total*circ;
-  document.getElementById('donut-svg').innerHTML = `
+  document.getElementById('donut-svg').innerHTML=`
     <circle cx="65" cy="65" r="50" fill="none" stroke="#E4E7EF" stroke-width="18"/>
-    <circle cx="65" cy="65" r="50" fill="none" stroke="#2563EB" stroke-width="18"
-      stroke-dasharray="${dM} ${circ-dM}" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
-    <circle cx="65" cy="65" r="50" fill="none" stroke="#7C3AED" stroke-width="18"
-      stroke-dasharray="${dG} ${circ-dG}" stroke-dashoffset="${-dM}" transform="rotate(-90 65 65)"/>
-    <circle cx="65" cy="65" r="50" fill="none" stroke="#C9943A" stroke-width="18"
-      stroke-dasharray="${dC} ${circ-dC}" stroke-dashoffset="${-(dM+dG)}" transform="rotate(-90 65 65)"/>
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#2563EB" stroke-width="18" stroke-dasharray="${dM} ${circ-dM}" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#7C3AED" stroke-width="18" stroke-dasharray="${dG} ${circ-dG}" stroke-dashoffset="${-dM}" transform="rotate(-90 65 65)"/>
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#C9943A" stroke-width="18" stroke-dasharray="${dC} ${circ-dC}" stroke-dashoffset="${-(dM+dG)}" transform="rotate(-90 65 65)"/>
     <text x="65" y="61" text-anchor="middle" font-size="18" font-weight="700" fill="#0D0F14">${M+G+C}</text>
     <text x="65" y="75" text-anchor="middle" font-size="10" fill="#8891A4">eventos</text>`;
 }
 
-function hbar(id, items) {
-  document.getElementById(id).innerHTML = items.map(({label,val,pct,color})=>`
-    <div class="hbar-row">
-      <div class="hbar-label"><strong>${label}</strong><span>${val}</span></div>
-      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>
-    </div>`).join('');
+function hbar(id,items){
+  document.getElementById(id).innerHTML=items.map(({label,val,p,color})=>`
+    <div><div class="hbar-label"><strong>${label}</strong><span>${val}</span></div>
+    <div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(p,100)}%;background:${color}"></div></div></div>`).join('');
 }
 
-async function loadBAJAS() {
-  const rows = await fetchCSV('BAJAS');
-  // Fila 2 (index 1): totales M,G,C eventos y bajas
-  const tot = rows[1] || [];
-  const evM=n(tot[0]), evG=n(tot[1]), evC=n(tot[2]);
-  const bM=n(tot[4]),  bG=n(tot[5]),  bC=n(tot[6]);
+function processBAJAS(rows){
+  const tot=rows[1]||[];
+  const evM=n(tot[0]),evG=n(tot[1]),evC=n(tot[2]);
+  const bM=n(tot[4]),bG=n(tot[5]),bC=n(tot[6]);
   const total=evM+evG+evC, totalBajas=bM+bG+bC;
 
-  // Filas detalle: desde index 2, col 12=N°, col15=plan, col16=tipo, col17=motivo, col19=rec
-  const detail = rows.slice(2).filter(r=>r[12]&&r[12].trim()!=='');
-  let bAmbar=0, bGina=0, recSI=0;
-  const tbody = document.getElementById('bajas-tbody');
+  const detail=rows.slice(2).filter(r=>r[12]&&String(r[12]).trim()!=='');
+  let bAmbar=0,bGina=0,recSI=0;
+  const tbody=document.getElementById('bajas-tbody');
   tbody.innerHTML='';
   detail.forEach(r=>{
-    const plan=r[15]||'', tipo=r[16]||'', mot=r[17]||'', rec=(r[19]||'').toUpperCase();
-    if(!plan.trim()) return;
+    const plan=String(r[15]||'').trim();
+    const tipo=String(r[16]||'').trim();
+    const mot=String(r[17]||'').trim();
+    const rec=String(r[19]||'').trim().toUpperCase();
+    if(!plan) return;
     if(plan.toLowerCase().includes('ambar')) bAmbar++; else bGina++;
     if(rec==='SI') recSI++;
-    const pc = plan.toLowerCase().includes('ambar')?'pill-ambar':'pill-gina';
+    const pc=plan.toLowerCase().includes('ambar')?'pill-ambar':'pill-gina';
     tbody.innerHTML+=`<tr><td>${r[12]}</td><td><span class="pill ${pc}">${plan}</span></td><td>${tipo}</td><td>${mot}</td><td><span class="pill ${rec==='SI'?'pill-si':'pill-no'}">${rec||'—'}</span></td></tr>`;
   });
 
-  const recPct = totalBajas>0?Math.round(recSI/totalBajas*100):0;
-  const tasaBaja = total>0?(totalBajas/total*100).toFixed(1):0;
+  const recPct=totalBajas>0?Math.round(recSI/totalBajas*100):0;
+  const tasaBaja=total>0?(totalBajas/total*100).toFixed(1):0;
 
-  // Gerencial
-  document.getElementById('kpi-total-eventos').textContent = total;
-  document.getElementById('kpi-total-bajas').textContent = totalBajas;
-  document.getElementById('kpi-bajas-sub').textContent = `De ${total} eventos registrados`;
-  document.getElementById('kpi-tasa-baja').textContent = `▲ ${tasaBaja}% tasa baja`;
-  document.getElementById('kpi-recuperacion').textContent = recPct+'%';
-  document.getElementById('kpi-motivo').textContent = '100%';
-  document.getElementById('leg-m').textContent = evM;
-  document.getElementById('leg-g').textContent = evG;
-  document.getElementById('leg-c').textContent = evC;
-  document.getElementById('pa-bajas').textContent = bAmbar;
-  document.getElementById('pg-bajas').textContent = bGina;
-  document.getElementById('pa-rec').textContent = '100% SI';
-  document.getElementById('pg-rec').textContent = '100% SI';
-  drawDonut(evM,evG,evC);
-  hbar('hbar-tipos',[
-    {label:'Matrimonios',val:`${bM} bajas · ${evM>0?(bM/evM*100).toFixed(1):0}%`,pct:evM>0?bM/evM*100:0,color:'#D14343'},
-    {label:'Galas',val:`${bG} bajas · ${evG>0?(bG/evG*100).toFixed(1):0}%`,pct:evG>0?bG/evG*100:0,color:'#F59E0B'},
-    {label:'Cumpleaños',val:`${bC} bajas · 0%`,pct:0,color:'#16A34A'},
-  ]);
-  hbar('hbar-plan',[
-    {label:'Ambar A',val:`${bAmbar} bajas`,pct:totalBajas>0?bAmbar/totalBajas*100:0,color:'#2563EB'},
-    {label:'Gina M',val:`${bGina} bajas`,pct:totalBajas>0?bGina/totalBajas*100:0,color:'#7C3AED'},
-  ]);
-  // Bajas page
+  document.getElementById('kpi-total-eventos').textContent=total;
+  document.getElementById('kpi-total-bajas').textContent=totalBajas;
+  document.getElementById('kpi-bajas-sub').textContent=`De ${total} eventos registrados`;
+  document.getElementById('kpi-tasa-baja').textContent=`▲ ${tasaBaja}% tasa baja`;
+  document.getElementById('kpi-recuperacion').textContent=recPct+'%';
+  document.getElementById('kpi-motivo').textContent='100%';
+  document.getElementById('leg-m').textContent=evM;
+  document.getElementById('leg-g').textContent=evG;
+  document.getElementById('leg-c').textContent=evC;
+  document.getElementById('pa-bajas').textContent=bAmbar;
+  document.getElementById('pg-bajas').textContent=bGina;
+  document.getElementById('pa-rec').textContent='100% SI';
+  document.getElementById('pg-rec').textContent='100% SI';
   document.getElementById('b-total').textContent=totalBajas;
   document.getElementById('b-m').textContent=bM;
-  document.getElementById('b-m-pct').textContent=evM>0?(bM/evM*100).toFixed(1)+'% del total M':'—';
+  document.getElementById('b-m-pct').textContent=evM>0?pct(bM,evM)+' del total M':'—';
   document.getElementById('b-g').textContent=bG;
-  document.getElementById('b-g-pct').textContent=evG>0?(bG/evG*100).toFixed(1)+'% del total G':'—';
+  document.getElementById('b-g-pct').textContent=evG>0?pct(bG,evG)+' del total G':'—';
   document.getElementById('b-rec').textContent=recPct+'%';
   document.getElementById('b-count-label').textContent=`${detail.length} registros`;
+  drawDonut(evM,evG,evC);
+  hbar('hbar-tipos',[
+    {label:'Matrimonios',val:`${bM} bajas · ${evM>0?pct(bM,evM):'0%'}`,p:evM>0?bM/evM*100:0,color:'#D14343'},
+    {label:'Galas',val:`${bG} bajas · ${evG>0?pct(bG,evG):'0%'}`,p:evG>0?bG/evG*100:0,color:'#F59E0B'},
+    {label:'Cumpleaños',val:`${bC} bajas · 0%`,p:0,color:'#16A34A'},
+  ]);
+  hbar('hbar-plan',[
+    {label:'Ambar A',val:`${bAmbar} bajas`,p:totalBajas>0?bAmbar/totalBajas*100:0,color:'#2563EB'},
+    {label:'Gina M',val:`${bGina} bajas`,p:totalBajas>0?bGina/totalBajas*100:0,color:'#7C3AED'},
+  ]);
+  return {bAmbar, bGina};
 }
 
-async function loadUPSELLING() {
-  const rows = await fetchCSV('UPSELLING');
-  const data = rows.slice(2).filter(r=>r[0]&&r[0].trim()!==''&&r[0].toLowerCase()!=='total');
-  let tA=0, tG=0;
-  const tbody = document.getElementById('upselling-tbody');
+function processUPSELLING(rows){
+  const data=rows.slice(2).filter(r=>r[0]&&String(r[0]).trim()!==''&&String(r[0]).toLowerCase()!=='total');
+  let tA=0,tG=0;
+  const tbody=document.getElementById('upselling-tbody');
   tbody.innerHTML='';
   data.forEach(r=>{
-    const ta=n(r[4]), tg=n(r[9]);
+    const ta=n(r[4]),tg=n(r[9]);
     tA+=ta; tG+=tg;
-    const pct = v => v&&v.includes('%') ? v : (n(v)*100).toFixed(1)+'%';
+    const fmtPct=v=>{ const x=n(v); return x>0?(x<1?(x*100).toFixed(1)+'%':x.toFixed(1)+'%'):(String(v)||'—'); };
     tbody.innerHTML+=`<tr>
       <td>${r[0]}</td>
-      <td>${r[1]||'—'}</td><td>${r[2]||'—'}</td><td>${r[3]||'—'}</td><td>${ta>0?'$'+ta.toLocaleString('es-CL'):'—'}</td>
-      <td>${r[6]||'—'}</td><td>${r[7]||'—'}</td><td>${r[8]||'—'}</td><td>${tg>0?'$'+tg.toLocaleString('es-CL'):'—'}</td>
+      <td>${r[1]||'—'}</td><td>${r[2]||'—'}</td><td>${fmtPct(r[3])}</td><td>${ta>0?'$'+ta.toLocaleString('es-CL'):'—'}</td>
+      <td>${r[6]||'—'}</td><td>${r[7]||'—'}</td><td>${fmtPct(r[8])}</td><td>${tg>0?'$'+tg.toLocaleString('es-CL'):'—'}</td>
     </tr>`;
   });
-  document.getElementById('ups-ambar-total').textContent = tA>0?'$'+tA.toLocaleString('es-CL'):'$0';
-  document.getElementById('ups-gina-total').textContent  = tG>0?'$'+tG.toLocaleString('es-CL'):'$0';
-  document.getElementById('kpi-upselling').textContent   = '$'+(tA+tG).toLocaleString('es-CL');
-  document.getElementById('pa-ups').textContent = '$'+tA.toLocaleString('es-CL');
-  document.getElementById('pg-ups').textContent = '$'+tG.toLocaleString('es-CL');
+  document.getElementById('ups-ambar-total').textContent=tA>0?'$'+tA.toLocaleString('es-CL'):'$0';
+  document.getElementById('ups-gina-total').textContent=tG>0?'$'+tG.toLocaleString('es-CL'):'$0';
+  document.getElementById('kpi-upselling').textContent='$'+(tA+tG).toLocaleString('es-CL');
+  document.getElementById('pa-ups').textContent='$'+tA.toLocaleString('es-CL');
+  document.getElementById('pg-ups').textContent='$'+tG.toLocaleString('es-CL');
 }
 
-async function loadREFERIDOS() {
-  const rows = await fetchCSV('REFERIDOS');
-  const data = rows.slice(2).filter(r=>r[0]&&r[0].trim()!==''&&r[0].toLowerCase()!=='total');
-  let cA=0, cG=0;
-  const tbody = document.getElementById('referidos-tbody');
+function processREFERIDOS(rows){
+  const data=rows.slice(2).filter(r=>r[0]&&String(r[0]).trim()!==''&&String(r[0]).toLowerCase()!=='total');
+  let cA=0,cG=0;
+  const tbody=document.getElementById('referidos-tbody');
   tbody.innerHTML='';
   data.forEach(r=>{
-    const ca=n(r[3]), cg=n(r[8]);
+    const ca=n(r[3]),cg=n(r[8]);
     cA+=ca; cG+=cg;
+    const fmtPct=v=>{ const x=n(v); return x>0?(x<1?(x*100).toFixed(1)+'%':x.toFixed(1)+'%'):(String(v)||'—'); };
     tbody.innerHTML+=`<tr>
       <td>${r[0]}</td>
-      <td>${r[2]||'—'}</td><td>${ca||'—'}</td><td>${r[4]||'—'}</td>
-      <td>${r[7]||'—'}</td><td>${cg||'—'}</td><td>${r[9]||'—'}</td>
+      <td>${r[2]||'—'}</td><td>${ca||'—'}</td><td>${fmtPct(r[4])}</td>
+      <td>${r[7]||'—'}</td><td>${cg||'—'}</td><td>${fmtPct(r[9])}</td>
     </tr>`;
   });
-  document.getElementById('ref-ambar-total').textContent = cA||'0';
-  document.getElementById('ref-gina-total').textContent  = cG||'0';
-  document.getElementById('kpi-referidos').textContent   = (cA+cG)||'0';
-  document.getElementById('pa-ref').textContent = cA||'0';
-  document.getElementById('pg-ref').textContent = cG||'0';
+  document.getElementById('ref-ambar-total').textContent=cA||'0';
+  document.getElementById('ref-gina-total').textContent=cG||'0';
+  document.getElementById('kpi-referidos').textContent=(cA+cG)||'0';
+  document.getElementById('pa-ref').textContent=cA||'0';
+  document.getElementById('pg-ref').textContent=cG||'0';
 }
 
-async function loadAll() {
+async function loadAll(){
+  setSyncLoading();
   try {
-    await Promise.all([loadBAJAS(), loadUPSELLING(), loadREFERIDOS()]);
+    const res = await fetch(SCRIPT_URL);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    processBAJAS(data.bajas);
+    processUPSELLING(data.upselling);
+    processREFERIDOS(data.referidos);
     setSyncOk();
   } catch(e) {
-    setSyncError('Error · Revisar permisos Sheets');
     console.error(e);
+    setSyncError();
   } finally {
     document.getElementById('loading-overlay').style.display='none';
   }
