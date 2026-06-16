@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · Indicadores de Planificación</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:      #0D0F14;
+    --ink-soft: #3D4250;
+    --ink-mute: #8891A4;
+    --surface:  #F5F6F9;
+    --card:     #FFFFFF;
+    --border:   #E4E7EF;
+    --accent:   #1A3A5C;
+    --accent2:  #2563EB;
+    --gold:     #C9943A;
+    --danger:   #D14343;
+    --success:  #16A34A;
+    --ambar:    #2563EB;
+    --gina:     #7C3AED;
+    --r: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; height: 64px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  }
+  .topbar-brand { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .topbar-brand span { color: var(--gold); }
+  .topbar-tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    background: transparent; border: none; color: rgba(255,255,255,.6);
+    font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 6px;
+    cursor: pointer; transition: all .2s; font-family: inherit;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .tab-btn.active { background: rgba(255,255,255,.18); color: #fff; }
+  .topbar-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .topbar-date { font-size: 11px; color: rgba(255,255,255,.55); }
+  .sync-status { font-size: 11px; color: rgba(255,255,255,.7); display: flex; align-items: center; gap: 5px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
+  .sync-dot.loading { background: var(--gold); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--danger); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* LAYOUT */
+  .page { display: none; padding: 32px; max-width: 1280px; margin: 0 auto; }
+  .page.active { display: block; animation: fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--ink-mute); margin-bottom: 16px;
+  }
+
+  /* KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 16px; margin-bottom: 28px; }
+  .kpi-card {
+    background: var(--card); border-radius: var(--r); padding: 22px 20px 18px;
+    border: 1px solid var(--border); position: relative; overflow: hidden;
+    transition: box-shadow .2s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--accent2); }
+  .kpi-card.gold::before { background: var(--gold); }
+  .kpi-card.danger::before { background: var(--danger); }
+  .kpi-card.success::before { background: var(--success); }
+  .kpi-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 8px; }
+  .kpi-value { font-size: 34px; font-weight: 700; line-height: 1; color: var(--ink); margin-bottom: 5px; }
+  .kpi-sub { font-size: 12px; color: var(--ink-mute); }
+  .kpi-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; margin-top:8px; }
+  .badge-danger { background:#FEF2F2; color:var(--danger); }
+  .badge-success { background:#F0FDF4; color:var(--success); }
+  .badge-warn { background:#FFFBEB; color:#B45309; }
+
+  /* GRIDS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  /* CARD */
+  .card { background: var(--card); border-radius: var(--r); border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+  .card-header { padding: 16px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .card-body { padding: 20px 22px; }
+
+  /* DONUT */
+  .donut-wrap { display: flex; align-items: center; gap: 24px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-val { font-weight: 600; margin-left: auto; }
+
+  /* HBAR */
+  .hbar-list { display: flex; flex-direction: column; gap: 14px; }
+  .hbar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; color: var(--ink-soft); }
+  .hbar-label strong { font-weight: 600; }
+  .hbar-track { height: 8px; background: var(--surface); border-radius: 99px; overflow: hidden; }
+  .hbar-fill { height: 100%; border-radius: 99px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .6px;
+    text-transform: uppercase; color: var(--ink-mute); padding: 10px 14px;
+    border-bottom: 1px solid var(--border); background: var(--surface);
+  }
+  .data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #FAFBFD; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:99px; font-size:11px; font-weight:600; }
+  .pill-si { background:#F0FDF4; color:#16A34A; }
+  .pill-no { background:#FEF2F2; color:#DC2626; }
+  .pill-ambar { background:#EFF6FF; color:#2563EB; }
+  .pill-gina  { background:#F5F3FF; color:#7C3AED; }
+
+  /* PLANNER */
+  .planner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .planner-card { border-radius: var(--r); padding: 20px; border: 1px solid var(--border); background: var(--card); }
+  .planner-card.ambar { border-top: 3px solid var(--ambar); }
+  .planner-card.gina  { border-top: 3px solid var(--gina); }
+  .planner-name { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+  .planner-name.ambar { color: var(--ambar); }
+  .planner-name.gina  { color: var(--gina); }
+  .planner-stat { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .planner-stat:last-child { border-bottom: none; }
+  .planner-stat-val { font-weight: 700; font-size: 16px; }
+
+  /* FORMULA CARD */
+  .formula-card {
+    background: var(--accent); color: #fff; border-radius: var(--r);
+    padding: 22px 28px; display: flex; align-items: center; gap: 32px; margin-bottom: 28px;
+  }
+  .formula-card h3 { font-size: 11px; font-weight: 500; opacity:.65; margin-bottom:6px; text-transform:uppercase; letter-spacing:.8px; }
+  .formula-eq { font-size: 16px; font-weight: 600; line-height: 1.6; }
+  .formula-eq .op { color: var(--gold); font-weight: 700; }
+  .formula-divider { width:1px; background:rgba(255,255,255,.15); align-self:stretch; flex-shrink:0; }
+  .formula-breakdown { display:flex; gap:28px; }
+  .formula-item { text-align:center; }
+  .formula-item .val { font-size:24px; font-weight:700; color:var(--gold); }
+  .formula-item .lbl { font-size:10px; opacity:.6; margin-top:3px; letter-spacing:.5px; text-transform:uppercase; }
+
+  /* FLOW */
+  .flow-list { display:flex; flex-direction:column; }
+  .flow-item { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid var(--border); }
+  .flow-item:last-child { border-bottom:none; }
+  .flow-dot { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; margin-top:2px; }
+  .flow-content h4 { font-size:13px; font-weight:600; margin-bottom:3px; }
+  .flow-content p  { font-size:12px; color:var(--ink-mute); line-height:1.5; }
+
+  /* ALERT */
+  .alert-box { background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:18px 22px; margin-top:20px; }
+  .alert-box-title { font-size:13px; font-weight:700; color:#B91C1C; margin-bottom:5px; }
+  .alert-box-body  { font-size:13px; color:#991B1B; line-height:1.6; }
+
+  /* STRATEGY */
+  .strategy-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+  .strategy-tile { background:var(--card); border-radius:var(--r); border:1px solid var(--border); padding:20px; }
+  .tile-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:10px; }
+  .tile-title { font-size:13px; font-weight:600; margin-bottom:6px; }
+  .tile-desc  { font-size:12px; color:var(--ink-mute); line-height:1.6; }
+
+  /* LOADING OVERLAY */
+  #loading-overlay {
+    position:fixed; inset:0; background:rgba(26,58,92,.92);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:999; color:#fff; gap:16px;
+  }
+  .spinner { width:40px; height:40px; border:3px solid rgba(255,255,255,.2); border-top-color:#fff; border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .loading-text { font-size:14px; opacity:.8; }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Conectando con Google Sheets…</div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-brand">Planificación <span>·</span> Dashboard</div>
+  <div class="topbar-tabs">
+    <button class="tab-btn active" onclick="showPage('gerencial',this)">Gerencial</button>
+    <button class="tab-btn" onclick="showPage('bajas',this)">Bajas</button>
+    <button class="tab-btn" onclick="showPage('upselling',this)">Upselling</button>
+    <button class="tab-btn" onclick="showPage('referidos',this)">Referidos</button>
+    <button class="tab-btn" onclick="showPage('estrategia',this)">Estrategia</button>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-date" id="fecha-actual"></div>
+    <div class="sync-status"><div class="sync-dot loading" id="sync-dot"></div><span id="sync-text">Cargando…</span></div>
+  </div>
+</div>
+
+<!-- ════ PAGE GERENCIAL ════ -->
+<div class="page active" id="page-gerencial">
+  <div class="formula-card">
+    <div>
+      <h3>Ecuación de resultado</h3>
+      <div class="formula-eq">INGRESO <span class="op">−</span> COSTO <span class="op">=</span> RESULTADO</div>
+    </div>
+    <div class="formula-divider"></div>
+    <div class="formula-breakdown">
+      <div class="formula-item"><div class="val">35%</div><div class="lbl">Ingreso</div></div>
+      <div class="formula-item"><div class="val">50%</div><div class="lbl">Venta</div></div>
+      <div class="formula-item"><div class="val">15%</div><div class="lbl">Costo</div></div>
+      <div class="formula-item"><div class="val">100%</div><div class="lbl">Meta</div></div>
+    </div>
+  </div>
+
+  <div class="section-label">Indicadores clave · En vivo desde Google Sheets</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-eyebrow">Total Eventos</div><div class="kpi-value" id="kpi-total-eventos">—</div><div class="kpi-sub">Matrimonios · Galas · Cumpleaños</div></div>
+    <div class="kpi-card danger"><div class="kpi-eyebrow">Total Bajas</div><div class="kpi-value" id="kpi-total-bajas">—</div><div class="kpi-sub" id="kpi-bajas-sub">De los eventos registrados</div><span class="kpi-badge badge-danger" id="kpi-tasa-baja">— tasa baja</span></div>
+    <div class="kpi-card success"><div class="kpi-eyebrow">Recuperación</div><div class="kpi-value" id="kpi-recuperacion">—</div><div class="kpi-sub">Bajas recuperadas</div><span class="kpi-badge badge-success">✓ Programa de rescate activo</span></div>
+    <div class="kpi-card gold"><div class="kpi-eyebrow">Upselling Total</div><div class="kpi-value" id="kpi-upselling">—</div><div class="kpi-sub" id="kpi-ups-sub">Ambar + Gina</div></div>
+    <div class="kpi-card"><div class="kpi-eyebrow">Referidos Conversión</div><div class="kpi-value" id="kpi-referidos">—</div><div class="kpi-sub" id="kpi-ref-sub">Contratos cerrados</div></div>
+    <div class="kpi-card danger"><div class="kpi-eyebrow">Motivo Baja</div><div class="kpi-value" id="kpi-motivo">—</div><div class="kpi-sub">Causa dominante registrada</div><span class="kpi-badge badge-danger">Alerta: causa única</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Distribución de Eventos</span></div>
+      <div class="card-body">
+        <div class="donut-wrap">
+          <svg id="donut-svg" width="130" height="130" viewBox="0 0 130 130" flex-shrink="0"></svg>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div><span>Matrimonios</span><span class="legend-val" id="leg-m">—</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div><span>Galas</span><span class="legend-val" id="leg-g">—</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#C9943A"></div><span>Cumpleaños</span><span class="legend-val" id="leg-c">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tasa de Bajas por Tipo</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-tipos"></div>
+        <div style="margin-top:20px;"><div class="section-label" style="margin-bottom:12px">Por planificadora</div><div class="hbar-list" id="hbar-plan"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Rendimiento por planificadora</div>
+  <div class="planner-grid">
+    <div class="planner-card ambar">
+      <div class="planner-name ambar">Ambar A</div>
+      <div class="planner-stat"><span>Bajas</span><span class="planner-stat-val" id="pa-bajas" style="color:var(--danger)">—</span></div>
+      <div class="planner-stat"><span>Upselling total</span><span class="planner-stat-val" id="pa-ups">—</span></div>
+      <div class="planner-stat"><span>Referidos cerrados</span><span class="planner-stat-val" id="pa-ref">—</span></div>
+      <div class="planner-stat"><span>Recuperación</span><span class="planner-stat-val" id="pa-rec" style="color:var(--success)">—</span></div>
+    </div>
+    <div class="planner-card gina">
+      <div class="planner-name gina">Gina M</div>
+      <div class="planner-stat"><span>Bajas</span><span class="planner-stat-val" id="pg-bajas" style="color:var(--gold)">—</span></div>
+      <div class="planner-stat"><span>Upselling total</span><span class="planner-stat-val" id="pg-ups">—</span></div>
+      <div class="planner-stat"><span>Referidos cerrados</span><span class="planner-stat-val" id="pg-ref">—</span></div>
+      <div class="planner-stat"><span>Recuperación</span><span class="planner-stat-val" id="pg-rec" style="color:var(--success)">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ PAGE BAJAS ════ -->
+<div class="page" id="page-bajas">
+  <div class="section-label">Detalle de Bajas · Datos en vivo</div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi-card danger"><div class="kpi-eyebrow">Total Bajas</div><div class="kpi-value" id="b-total">—</div></div>
+    <div class="kpi-card"><div class="kpi-eyebrow">Bajas Matrimonios</div><div class="kpi-value" id="b-m">—</div><div class="kpi-sub" id="b-m-pct">—</div></div>
+    <div class="kpi-card"><div class="kpi-eyebrow">Bajas Galas</div><div class="kpi-value" id="b-g">—</div><div class="kpi-sub" id="b-g-pct">—</div></div>
+    <div class="kpi-card success"><div class="kpi-eyebrow">Tasa Recuperación</div><div class="kpi-value" id="b-rec">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Registro de Bajas</span>
+      <span style="font-size:12px;color:var(--ink-mute)" id="b-count-label">Cargando…</span>
+    </div>
+    <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>N°</th><th>Planificadora</th><th>Tipo Evento</th><th>Motivo</th><th>Recuperación</th></tr></thead><tbody id="bajas-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ════ PAGE UPSELLING ════ -->
+<div class="page" id="page-upselling">
+  <div class="section-label">Upselling · Datos en vivo</div>
+  <div class="two-col" style="margin-bottom:24px;">
+    <div class="kpi-card gold"><div class="kpi-eyebrow">Total Upselling Ambar</div><div class="kpi-value" id="ups-ambar-total">—</div></div>
+    <div class="kpi-card gold"><div class="kpi-eyebrow">Total Upselling Gina</div><div class="kpi-value" id="ups-gina-total">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Seguimiento Mensual</span></div>
+    <div style="overflow-x:auto;"><table class="data-table">
+      <thead><tr>
+        <th>Mes</th>
+        <th style="color:#2563EB">Ambar · Eventos</th><th style="color:#2563EB">Ventas</th><th style="color:#2563EB">% Ups.</th><th style="color:#2563EB">Total</th>
+        <th style="color:#7C3AED">Gina · Eventos</th><th style="color:#7C3AED">Ventas</th><th style="color:#7C3AED">% Ups.</th><th style="color:#7C3AED">Total</th>
+      </tr></thead>
+      <tbody id="upselling-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════ PAGE REFERIDOS ════ -->
+<div class="page" id="page-referidos">
+  <div class="section-label">Referidos · Datos en vivo</div>
+  <div class="two-col" style="margin-bottom:24px;">
+    <div class="kpi-card"><div class="kpi-eyebrow">Contratos Ambar</div><div class="kpi-value" id="ref-ambar-total">—</div></div>
+    <div class="kpi-card"><div class="kpi-eyebrow">Contratos Gina</div><div class="kpi-value" id="ref-gina-total">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Seguimiento Mensual</span></div>
+    <div style="overflow-x:auto;"><table class="data-table">
+      <thead><tr>
+        <th>Mes</th>
+        <th style="color:#2563EB">Ambar · Referido</th><th style="color:#2563EB">Contrato</th><th style="color:#2563EB">Conversión</th>
+        <th style="color:#7C3AED">Gina · Referido</th><th style="color:#7C3AED">Contrato</th><th style="color:#7C3AED">Conversión</th>
+      </tr></thead>
+      <tbody id="referidos-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════ PAGE ESTRATEGIA ════ -->
+<div class="page" id="page-estrategia">
+  <div class="section-label">Indicadores Estratégicos</div>
+  <div class="strategy-grid">
+    <div class="strategy-tile"><div class="tile-icon" style="background:#EFF6FF">🔍</div><div class="tile-title">Indicadores de Éxito</div><div class="tile-desc">Antecedentes por referencias de eventos anteriores y monitoreo de comentarios en redes sociales.</div></div>
+    <div class="strategy-tile"><div class="tile-icon" style="background:#F0FDF4">🤝</div><div class="tile-title">Mayor Contacto con Clientes</div><div class="tile-desc">Incrementar frecuencia y calidad de comunicación durante el proceso de planificación.</div></div>
+    <div class="strategy-tile"><div class="tile-icon" style="background:#FEF2F2">🛡️</div><div class="tile-title">Programa de Rescate</div><div class="tile-desc">Medidas activas para resguardar las bajas. Actualmente con 100% de efectividad.</div></div>
+    <div class="strategy-tile"><div class="tile-icon" style="background:#FFFBEB">💰</div><div class="tile-title">Ventas Adicionales</div><div class="tile-desc">Upselling estructurado por planificadora y mes. Conectado en vivo a la hoja compartida.</div></div>
+    <div class="strategy-tile"><div class="tile-icon" style="background:#F5F3FF">👥</div><div class="tile-title">Referidos</div><div class="tile-desc">Pipeline de clientes referidos con seguimiento de conversión a contrato cerrado.</div></div>
+    <div class="strategy-tile"><div class="tile-icon" style="background:#FFF0F0">❤️</div><div class="tile-title">Acciones de Amor</div><div class="tile-desc">Iniciativas de fidelización y experiencia del cliente en el proceso de planificación.</div></div>
+  </div>
+  <div class="section-label">Flujo del resultado · META 100%</div>
+  <div class="card">
+    <div class="card-body">
+      <div class="flow-list">
+        <div class="flow-item"><div class="flow-dot" style="background:#2563EB">1</div><div class="flow-content"><h4>INGRESO (35%)</h4><p>Base de ingresos de eventos contratados: Matrimonios, Galas y Cumpleaños.</p></div></div>
+        <div class="flow-item"><div class="flow-dot" style="background:#7C3AED">2</div><div class="flow-content"><h4>VENTA adicional (50%)</h4><p>Upselling + Referidos + Elección de Menú. Principal motor de resultado.</p></div></div>
+        <div class="flow-item"><div class="flow-dot" style="background:#C9943A">3</div><div class="flow-content"><h4>COSTO (15% a controlar)</h4><p>Gestión de bajas y costos asociados. Elección de menú como variable de control.</p></div></div>
+        <div class="flow-item"><div class="flow-dot" style="background:#16A34A">✓</div><div class="flow-content"><h4>RESULTADO = META 100%</h4><p>El equilibrio entre los tres ejes determina el cumplimiento de la meta.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="alert-box">
+    <div class="alert-box-title">⚠ Alerta Estratégica · Acción Requerida</div>
+    <div class="alert-box-body">El <strong>100% de las bajas tienen causa económica</strong>. Se requiere una respuesta comercial estructurada: facilidades de pago, propuestas escalonadas o beneficios diferenciadores que reduzcan la fricción antes de la baja.</div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1i_9g3hzH2JEJcyYwgWaNnfdjiLF3HryIHjsiefDSiMU';
+const API_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+
+// Fecha
+const hoy = new Date();
+document.getElementById('fecha-actual').textContent =
+  hoy.toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+async function fetchSheet(sheetName) {
+  const url = API_BASE + encodeURIComponent(sheetName);
+  const res = await fetch(url);
+  const text = await res.text();
+  const json = JSON.parse(text.replace(/^[^{]+/, '').replace(/[^}]+$/, ''));
+  return json.table;
+}
+
+function cell(row, col) {
+  const c = row.c[col];
+  return c && c.v !== null && c.v !== undefined ? c.v : '';
+}
+
+function fmt(val) {
+  if (val === '' || val === null || val === undefined) return '—';
+  if (typeof val === 'number') {
+    if (val === 0) return '$0';
+    if (Math.abs(val) < 1) return (val*100).toFixed(1)+'%';
+    return '$'+val.toLocaleString('es-CL');
+  }
+  return String(val).trim() || '—';
+}
+
+function setSyncOk() {
+  const dot = document.getElementById('sync-dot');
+  dot.classList.remove('loading','error');
+  dot.style.background = '#4ADE80';
+  document.getElementById('sync-text').textContent = 'Sincronizado · ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+}
+function setSyncError() {
+  const dot = document.getElementById('sync-dot');
+  dot.classList.remove('loading');
+  dot.classList.add('error');
+  document.getElementById('sync-text').textContent = 'Error de conexión';
+}
+
+function drawDonut(M, G, C) {
+  const total = M + G + C || 1;
+  const circ = 2 * Math.PI * 50;
+  const pM = M/total, pG = G/total, pC = C/total;
+  const dM = pM*circ, dG = pG*circ, dC = pC*circ;
+  const svg = document.getElementById('donut-svg');
+  svg.innerHTML = `
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#E4E7EF" stroke-width="18"/>
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#2563EB" stroke-width="18"
+      stroke-dasharray="${dM} ${circ-dM}" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#7C3AED" stroke-width="18"
+      stroke-dasharray="${dG} ${circ-dG}" stroke-dashoffset="${-dM}" transform="rotate(-90 65 65)"/>
+    <circle cx="65" cy="65" r="50" fill="none" stroke="#C9943A" stroke-width="18"
+      stroke-dasharray="${dC} ${circ-dC}" stroke-dashoffset="${-(dM+dG)}" transform="rotate(-90 65 65)"/>
+    <text x="65" y="61" text-anchor="middle" font-size="18" font-weight="700" fill="#0D0F14">${total}</text>
+    <text x="65" y="75" text-anchor="middle" font-size="10" fill="#8891A4">eventos</text>`;
+}
+
+function hbar(containerId, items) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(({label, val, pct, color}) => `
+    <div class="hbar-row">
+      <div class="hbar-label"><strong>${label}</strong><span>${val}</span></div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>
+    </div>`).join('');
+}
+
+async function loadBAJAS() {
+  const table = await fetchSheet('BAJAS');
+  const rows = table.rows;
+
+  // Totals row (row index 1): M=col0, G=col1, C=col2, bajasM=col4, bajasG=col5, bajasC=col6, pctM=col8, pctG=col9
+  const totRow = rows[1];
+  const evM = Number(cell(totRow,0)) || 0;
+  const evG = Number(cell(totRow,1)) || 0;
+  const evC = Number(cell(totRow,2)) || 0;
+  const bM  = Number(cell(totRow,4)) || 0;
+  const bG  = Number(cell(totRow,5)) || 0;
+  const bC  = Number(cell(totRow,6)) || 0;
+  const total = evM + evG + evC;
+  const totalBajas = bM + bG + bC;
+
+  // Detail rows start at index 2 (row 3 in sheet), col12=N°, col15=planificadora, col16=tipo, col17=motivo, col19=recuperacion
+  const detailRows = rows.slice(2).filter(r => r.c && cell(r,12) !== '');
+
+  let bajasAmbar=0, bajasGina=0, recSI=0;
+  const tbody = document.getElementById('bajas-tbody');
+  tbody.innerHTML = '';
+
+  detailRows.forEach(r => {
+    const n    = cell(r,12);
+    const plan = String(cell(r,15)||'').trim();
+    const tipo = String(cell(r,16)||'').trim();
+    const mot  = String(cell(r,17)||'').trim();
+    const rec  = String(cell(r,19)||'').trim();
+    if (!plan) return;
+    if (plan.toLowerCase().includes('ambar')) bajasAmbar++;
+    else bajasGina++;
+    if (rec.toUpperCase() === 'SI') recSI++;
+    const planClass = plan.toLowerCase().includes('ambar') ? 'pill-ambar' : 'pill-gina';
+    tbody.innerHTML += `<tr>
+      <td>${n}</td>
+      <td><span class="pill ${planClass}">${plan}</span></td>
+      <td>${tipo}</td><td>${mot}</td>
+      <td><span class="pill ${rec.toUpperCase()==='SI'?'pill-si':'pill-no'}">${rec||'—'}</span></td>
+    </tr>`;
+  });
+
+  const recPct = totalBajas > 0 ? Math.round(recSI/totalBajas*100) : 0;
+  const tasaBaja = total > 0 ? (totalBajas/total*100).toFixed(1) : 0;
+
+  // GERENCIAL
+  document.getElementById('kpi-total-eventos').textContent = total;
+  document.getElementById('kpi-total-bajas').textContent = totalBajas;
+  document.getElementById('kpi-bajas-sub').textContent = `De ${total} eventos registrados`;
+  document.getElementById('kpi-tasa-baja').textContent = `▲ ${tasaBaja}% tasa baja`;
+  document.getElementById('kpi-recuperacion').textContent = recPct+'%';
+  document.getElementById('kpi-motivo').textContent = '100%';
+  document.getElementById('leg-m').textContent = evM;
+  document.getElementById('leg-g').textContent = evG;
+  document.getElementById('leg-c').textContent = evC;
+  document.getElementById('pa-bajas').textContent = bajasAmbar;
+  document.getElementById('pg-bajas').textContent = bajasGina;
+  document.getElementById('pa-rec').textContent = '100% SI';
+  document.getElementById('pg-rec').textContent = '100% SI';
+  drawDonut(evM, evG, evC);
+
+  hbar('hbar-tipos', [
+    {label:'Matrimonios', val:`${bM} bajas · ${evM>0?(bM/evM*100).toFixed(1):0}%`, pct: evM>0?bM/evM*100:0, color:'#D14343'},
+    {label:'Galas',       val:`${bG} bajas · ${evG>0?(bG/evG*100).toFixed(1):0}%`, pct: evG>0?bG/evG*100:0, color:'#F59E0B'},
+    {label:'Cumpleaños',  val:`${bC} bajas · 0%`, pct:0, color:'#16A34A'},
+  ]);
+  hbar('hbar-plan', [
+    {label:'Ambar A', val:`${bajasAmbar} bajas`, pct: totalBajas>0?bajasAmbar/totalBajas*100:0, color:'#2563EB'},
+    {label:'Gina M',  val:`${bajasGina} bajas`,  pct: totalBajas>0?bajasGina/totalBajas*100:0,  color:'#7C3AED'},
+  ]);
+
+  // BAJAS PAGE
+  document.getElementById('b-total').textContent = totalBajas;
+  document.getElementById('b-m').textContent = bM;
+  document.getElementById('b-m-pct').textContent = evM>0?(bM/evM*100).toFixed(1)+'% del total M':'—';
+  document.getElementById('b-g').textContent = bG;
+  document.getElementById('b-g-pct').textContent = evG>0?(bG/evG*100).toFixed(1)+'% del total G':'—';
+  document.getElementById('b-rec').textContent = recPct+'%';
+  document.getElementById('b-count-label').textContent = `${detailRows.length} registros · Motivo único: Económico`;
+}
+
+async function loadUPSELLING() {
+  const table = await fetchSheet('UPSELLING');
+  const rows = table.rows;
+  const tbody = document.getElementById('upselling-tbody');
+  tbody.innerHTML = '';
+  let totalAmbar = 0, totalGina = 0;
+
+  // Data rows: skip first 2 (header rows), stop before TOTAL
+  const dataRows = rows.slice(2).filter(r => {
+    const m = cell(r,0);
+    return m && String(m).trim() !== '' && String(m).toLowerCase() !== 'total';
+  });
+
+  dataRows.forEach(r => {
+    const mes   = cell(r,0)||'';
+    const eA    = cell(r,1)||'—'; const vA = cell(r,2)||'—'; const pA = cell(r,3)||'—'; const tA = cell(r,4);
+    const eG    = cell(r,6)||'—'; const vG = cell(r,7)||'—'; const pG = cell(r,8)||'—'; const tG = cell(r,9);
+    if(typeof tA === 'number') totalAmbar += tA;
+    if(typeof tG === 'number') totalGina  += tG;
+    tbody.innerHTML += `<tr>
+      <td>${mes}</td>
+      <td>${eA}</td><td>${vA}</td><td>${typeof pA==='number'?(pA*100).toFixed(1)+'%':pA}</td><td>${typeof tA==='number'?'$'+tA.toLocaleString('es-CL'):tA||'—'}</td>
+      <td>${eG}</td><td>${vG}</td><td>${typeof pG==='number'?(pG*100).toFixed(1)+'%':pG}</td><td>${typeof tG==='number'?'$'+tG.toLocaleString('es-CL'):tG||'—'}</td>
+    </tr>`;
+  });
+
+  document.getElementById('ups-ambar-total').textContent = totalAmbar>0?'$'+totalAmbar.toLocaleString('es-CL'):'$0';
+  document.getElementById('ups-gina-total').textContent  = totalGina>0?'$'+totalGina.toLocaleString('es-CL'):'$0';
+  document.getElementById('kpi-upselling').textContent   = '$'+(totalAmbar+totalGina).toLocaleString('es-CL');
+  document.getElementById('pa-ups').textContent = '$'+totalAmbar.toLocaleString('es-CL');
+  document.getElementById('pg-ups').textContent = '$'+totalGina.toLocaleString('es-CL');
+}
+
+async function loadREFERIDOS() {
+  const table = await fetchSheet('REFERIDOS');
+  const rows = table.rows;
+  const tbody = document.getElementById('referidos-tbody');
+  tbody.innerHTML = '';
+  let contAmbar = 0, contGina = 0;
+
+  const dataRows = rows.slice(2).filter(r => {
+    const m = cell(r,0);
+    return m && String(m).trim() !== '' && String(m).toLowerCase() !== 'total';
+  });
+
+  dataRows.forEach(r => {
+    const mes  = cell(r,0)||'';
+    const nA   = cell(r,1)||'—'; const cA = cell(r,2); const cvA = cell(r,3)||'—';
+    const nG   = cell(r,6)||'—'; const cG = cell(r,7); const cvG = cell(r,8)||'—';
+    if(typeof cA==='number' && cA>0) contAmbar++;
+    if(typeof cG==='number' && cG>0) contGina++;
+    tbody.innerHTML += `<tr>
+      <td>${mes}</td>
+      <td>${nA}</td><td>${cA||'—'}</td><td>${typeof cvA==='number'?(cvA*100).toFixed(1)+'%':cvA}</td>
+      <td>${nG}</td><td>${cG||'—'}</td><td>${typeof cvG==='number'?(cvG*100).toFixed(1)+'%':cvG}</td>
+    </tr>`;
+  });
+
+  document.getElementById('ref-ambar-total').textContent = contAmbar||'0';
+  document.getElementById('ref-gina-total').textContent  = contGina||'0';
+  document.getElementById('kpi-referidos').textContent   = contAmbar+contGina||'0';
+  document.getElementById('pa-ref').textContent = contAmbar||'0';
+  document.getElementById('pg-ref').textContent = contGina||'0';
+}
+
+async function loadAll() {
+  try {
+    await Promise.all([loadBAJAS(), loadUPSELLING(), loadREFERIDOS()]);
+    setSyncOk();
+  } catch(e) {
+    setSyncError();
+    console.error(e);
+  } finally {
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>
