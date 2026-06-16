@@ -305,7 +305,7 @@ function setSyncError(msg) {
 // Usar proxy CORS-free: allorigins
 async function fetchCSV(sheetName) {
   const exportUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(exportUrl)}`;
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(exportUrl)}`;
   const res = await fetch(proxy);
   if (!res.ok) throw new Error('HTTP '+res.status);
   const text = await res.text();
